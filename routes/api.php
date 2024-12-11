@@ -11,3 +11,5 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/generator/cpf', [GeneratorController::class, 'cpf']);
+// http://127.0.0.1:8000/api/generator/cpf?formatted=true&uf=MG
+
