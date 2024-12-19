@@ -1,6 +1,15 @@
-<img src="https://tools4devs.rodrigorchagas.com.br/img/logo-tools4devs.png" alt="Tools4Devs Logo" width="180">
+<table>
+  <tr>
+    <td>
+      <img src="https://tools4devs.rodrigorchagas.com.br/img/logo-tools4devs.png" alt="Tools4Devs Logo" width="100">
+    </td>
+    <td>
+      <h1>Tools4Devs</h1>
+    </td>
+  </tr>
+</table>
 
-# Tools4Devs
+---
 
 ## Sobre o Tools4Devs
 
