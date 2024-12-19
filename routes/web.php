@@ -1,7 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
-Route::get('/', function () {
-    return view('welcome');
+$router->group(['middleware' => 'language'], function () use ($router) {
+    $router->get('/', function () {
+        return view('welcome');
+    });
 });
+
+$router->aliasMiddleware('language', \App\Http\Middleware\LanguageSwitcher::class);
