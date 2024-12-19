@@ -1,6 +1,6 @@
 # Tools4Devs
 
-![Tools4Devs Logo](https://tools4devs.rodrigorchagas.com.br/img/logo-tools4devs.png)
+<img src="https://tools4devs.rodrigorchagas.com.br/img/logo-tools4devs.png" alt="Tools4Devs Logo" width="200">
 
 ---
 
