@@ -1,9 +1,7 @@
 <div style="display: flex; align-items: center; gap: 10px; border: none;">
-  <img src="https://tools4devs.rodrigorchagas.com.br/img/logo-tools4devs.png" alt="Tools4Devs Logo" width="120">
+  <img src="https://tools4devs.rodrigorchagas.com.br/img/logo-tools4devs.png" alt="Tools4Devs Logo" width="180">
   <h1 style="margin: 0; font-size: 1.5rem;">Tools4Devs</h1>
 </div>
-
----
 
 ## Sobre o Tools4Devs
 
