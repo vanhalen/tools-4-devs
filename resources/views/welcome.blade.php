@@ -12,6 +12,8 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
         <!-- Styles / Scripts -->
         <style>
             body {
@@ -151,14 +153,27 @@
             <div class="card">
                 <h2>{{ __('messages.get_started') }}</h2>
                 <p>{{ __('messages.documentation_intro') }}</p>
-                <a href="/docs"  class="btn-a text-center"">
+                <a href="/api/documentation" target="_blank"  class="btn-a text-center"">
                     {{ __('messages.view_documentation') }}
                 </a>
             </div>
         </main>
 
-        <footer>
-            Tools4Devs v1.0 (<a href="https://rodrigorchagas.com.br" target="_blank">Rodrigo Chagas<a>)
+        <footer style="text-align: center; padding: 1rem; font-size: 0.875rem; color: #ffffff;">
+            Tools4Devs v1.0 © 2024-<span id="currentYear"></span>
+            <p>
+                <a href="https://rodrigorchagas.com.br" target="_blank" style="color: #ff6700;">Rodrigo Chagas</a>
+                <a href="https://github.com/vanhalen/tools-4-devs" target="_blank" style="margin-left: 5px; color: #ffffff;">
+                    <i class="fab fa-github" style="font-size: 20px;"></i>
+                </a>
+            </p>
         </footer>
+
+        <script>
+            // Atualiza o ano atual dinamicamente
+            document.getElementById("currentYear").textContent = new Date().getFullYear();
+        </script>
+
+
     </body>
 </html>
