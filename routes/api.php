@@ -33,3 +33,6 @@ Route::get('/generator/senha', [GeneratorController::class, 'senha']);
 
 Route::get('/generator/endereco', [GeneratorController::class, 'endereco']);
 //http://127.0.0.1:8000/api/generator/endereco?uf=SP&formatted=false
+
+Route::get('/generator/lorem-ipsum', [GeneratorController::class, 'loremIpsum']);
+// http://127.0.0.1:8000/api/generator/lorem-ipsum?length=50&type=palavras&format=html
