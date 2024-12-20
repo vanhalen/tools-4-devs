@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\GeneratorController;
+use App\Http\Controllers\Api\NetworkController;
+use App\Http\Controllers\Api\ValidatorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -9,6 +11,10 @@ use Illuminate\Support\Facades\Route;
 // });
 // })->middleware('auth:sanctum'); // Verifica se o usuário está logado (Desnecessário)
 
+
+################
+# GERADORES
+################
 
 Route::get('/generator/cpf', [GeneratorController::class, 'cpf']);
 // http://127.0.0.1:8000/api/generator/cpf?formatted=true&uf=MG
@@ -36,3 +42,28 @@ Route::get('/generator/endereco', [GeneratorController::class, 'endereco']);
 
 Route::get('/generator/lorem-ipsum', [GeneratorController::class, 'loremIpsum']);
 // http://127.0.0.1:8000/api/generator/lorem-ipsum?length=50&type=palavras&format=html
+
+
+################
+# NETWORK - REDE
+################
+
+Route::get('/network/ip', [NetworkController::class, 'getIp']);
+// http://127.0.0.1:8000/api/network/ip
+
+Route::get('/network/browser', [NetworkController::class, 'getBrowser']);
+// http://127.0.0.1:8000/api/network/browser
+
+Route::get('/network/system', [NetworkController::class, 'getSystem']);
+// http://127.0.0.1:8000/api/network/system
+
+Route::get('/network/validate-ip', [NetworkController::class, 'validateIp']);
+// http://127.0.0.1:8000/api/network/validate-ip?ip=127.0.0.0
+
+Route::get('/network/resolve-dns', [NetworkController::class, 'resolveDns']);
+// http://127.0.0.1:8000/api/network/resolve-dns?host=google.com
+
+Route::get('/network/test-port', [NetworkController::class, 'testPort']);
+// http://127.0.0.1:8000/api/network/test-port?host=google.com.br&port=80
+
+
