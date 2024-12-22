@@ -32,7 +32,7 @@ Route::get('/generator/pis-pasep', [GeneratorController::class, 'pisPasep']);
 // http://127.0.0.1:8000/api/generator/pis-pasep?formatted=true
 
 Route::get('/generator/certidao', [GeneratorController::class, 'certidao']);
-http://127.0.0.1:8000/api/generator/certidao?formatted=true&type=obito&year=2024&uf=SP&notary=2530
+// http://127.0.0.1:8000/api/generator/certidao?formatted=true&type=obito&year=2024&uf=SP&notary=2530
 
 Route::get('/generator/senha', [GeneratorController::class, 'senha']);
 //http://127.0.0.1:8000/api/generator/senha?length=12&uppercase=true&lowercase=false&numbers=false&specials=false
@@ -42,6 +42,28 @@ Route::get('/generator/endereco', [GeneratorController::class, 'endereco']);
 
 Route::get('/generator/lorem-ipsum', [GeneratorController::class, 'loremIpsum']);
 // http://127.0.0.1:8000/api/generator/lorem-ipsum?length=50&type=palavras&format=html
+
+
+
+################
+# VALIDADORES
+################
+
+Route::get('/validator/cpf', [ValidatorController::class, 'cpf']);
+// http://127.0.0.1:8000/api/validator/cpf?cpf=43973515387
+
+Route::get('/validator/rg', [ValidatorController::class, 'rg']);
+// http://127.0.0.1:8000/api/validator/rg?rg=43973515387
+
+Route::get('/validator/cnpj', [ValidatorController::class, 'cnpj']);
+// http://127.0.0.1:8000/api/validator/cnpj?cnpj=64242290928912
+
+Route::get('/validator/titulo-eleitor', [ValidatorController::class, 'tituloEleitor']);
+// http://127.0.0.1:8000/api/validator/titulo-eleitor?titulo=528507860990
+
+Route::get('/validator/pis-pasep', [ValidatorController::class, 'pisPasep']);
+// http://127.0.0.1:8000/api/validator/pis-pasep?pispasep=528507860990
+
 
 
 ################
