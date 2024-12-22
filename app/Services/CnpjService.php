@@ -4,6 +4,53 @@ namespace App\Services;
 
 class CnpjService
 {
+
+    /**
+     * Valida um CNPJ.
+     *
+     * @param string $cnpj
+     * @return bool
+     */
+    public function validate(string $cnpj): bool
+    {
+        // Remove caracteres não numéricos
+        $cnpj = preg_replace('/\D/', '', $cnpj);
+
+        // Verifica se o CNPJ tem 14 dígitos
+        if (strlen($cnpj) !== 14 || preg_match('/(\d)\1{13}/', $cnpj)) {
+            return false;
+        }
+
+        // Cálculo dos dígitos verificadores
+        $pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+        $pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
+        // Calcula o primeiro dígito verificador
+        $soma = 0;
+        for ($i = 0; $i < 12; $i++) {
+            $soma += $cnpj[$i] * $pesos1[$i];
+        }
+        $resto = $soma % 11;
+        $digito1 = $resto < 2 ? 0 : 11 - $resto;
+
+        // Verifica o primeiro dígito
+        if ($cnpj[12] != $digito1) {
+            return false;
+        }
+
+        // Calcula o segundo dígito verificador
+        $soma = 0;
+        for ($i = 0; $i < 13; $i++) {
+            $soma += $cnpj[$i] * $pesos2[$i];
+        }
+        $resto = $soma % 11;
+        $digito2 = $resto < 2 ? 0 : 11 - $resto;
+
+        // Verifica o segundo dígito
+        return $cnpj[13] == $digito2;
+    }
+
+
     /**
      * Gera um CNPJ válido.
      *
