@@ -17,9 +17,8 @@ class NetworkController extends Controller
      */
     public function getIp(Request $request)
     {
-        $userIp = $this->getUserIp($request);
-        $ipv4 = filter_var($userIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) ? $userIp : null;
-        $ipv6 = filter_var($userIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) ? $userIp : null;
+        $ipv4 = $this->getIpByType($request, FILTER_FLAG_IPV4);
+        $ipv6 = $this->getIpByType($request, FILTER_FLAG_IPV6);
 
         return response()->json([
             'status' => true,
@@ -30,13 +29,7 @@ class NetworkController extends Controller
         ]);
     }
 
-    /**
-     * Obtém o IP do usuário considerando proxies e cabeçalhos confiáveis.
-     *
-     * @param Request $request
-     * @return string|null
-     */
-    private function getUserIp(Request $request)
+    private function getIpByType(Request $request, int $filter)
     {
         $headers = [
             'HTTP_CLIENT_IP',
@@ -53,14 +46,16 @@ class NetworkController extends Controller
                 $ips = explode(',', $request->server($header));
                 foreach ($ips as $ip) {
                     $ip = trim($ip);
-                    if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                    if (filter_var($ip, FILTER_VALIDATE_IP, $filter)) {
                         return $ip;
                     }
                 }
             }
         }
 
-        return $request->ip();
+        // Como último recurso, usa o IP direto
+        $userIp = $request->ip();
+        return filter_var($userIp, FILTER_VALIDATE_IP, $filter) ? $userIp : null;
     }
 
     /**
