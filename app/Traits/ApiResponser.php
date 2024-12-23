@@ -35,4 +35,18 @@ trait ApiResponser
             ],
         ], $statusCode);
     }
+
+    protected function successResponseValidate($request, $arg, $service){
+        $req = $request->query($arg);
+        if (!$req) return $this->errorResponse(strtoupper($arg).' é obrigatório.');
+
+        $isValid = $service->validate($req);
+
+        if($arg === 'titulo') {
+            $uf = $service->getUf($req);
+            return $this->successResponse([$arg => $req, 'uf' => $uf, 'is_valid' => $isValid]);
+        }
+
+        return $this->successResponse([$arg => $req, 'is_valid' => $isValid]);
+    }
 }

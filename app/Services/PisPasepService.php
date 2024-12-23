@@ -5,6 +5,33 @@ namespace App\Services;
 class PisPasepService
 {
     /**
+     * Valida um número PIS/PASEP.
+     *
+     * @param string $pispasep
+     * @return bool
+     */
+    public function validate(string $pispasep): bool
+    {
+        // Remove caracteres não numéricos
+        $pispasep = preg_replace('/\D/', '', $pispasep);
+
+        // Verifica se o número do PIS/PASEP tem exatamente 11 dígitos
+        if (strlen($pispasep) !== 11) {
+            return false;
+        }
+
+        // Extrai os 10 primeiros dígitos (base) e o dígito verificador
+        $base = array_map('intval', str_split(substr($pispasep, 0, 10)));
+        $dv = (int) $pispasep[10];
+
+        // Calcula o dígito verificador esperado
+        $calculatedDv = $this->calculateDigit($base);
+
+        // Verifica se o dígito verificador está correto
+        return $dv === $calculatedDv;
+    }
+
+    /**
      * Gera um PIS/PASEP válido.
      *
      * @param bool $formatted
