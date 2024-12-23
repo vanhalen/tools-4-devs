@@ -109,6 +109,38 @@
                 padding: 1rem;
                 font-size: 0.875rem;
             }
+
+            .custom-alert {
+                border: 2px solid #ff6700; /* Borda laranja */
+                border-radius: 8px;
+                padding: 16px;
+                color: #ffffff; /* Texto escuro */
+                font-family: Arial, sans-serif;
+                margin-bottom: 16px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .custom-alert h3 {
+                font-size: 1rem;
+                margin-bottom: 8px;
+                color: #ff6700; /* Título laranja */
+            }
+
+            .custom-alert p {
+                font-size: 0.9rem;
+                margin-bottom: 8px;
+                line-height: 1.5;
+            }
+
+            .custom-alert a {
+                color: #007bff; /* Link azul */
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+            .custom-alert a:hover {
+                text-decoration: underline;
+            }
         </style>
     </head>
     <body>
@@ -156,6 +188,24 @@
                 <a href="/api/documentation" target="_blank"  class="btn-a text-center"">
                     {{ __('messages.view_documentation') }}
                 </a>
+            </div>
+        </main>
+
+        <main>
+
+            <div class="custom-alert">
+                <h3>{{ __('messages.alert_title1') }}</h3>
+                <p>{!! __('messages.alert_info1') !!}</p>
+
+                <h3>{{ __('messages.alert_title2') }}</h3>
+                <p>{!! __('messages.alert_info2') !!}</p>
+
+                <h3>{{ __('messages.alert_title3') }}</h3>
+                <p>{!! __('messages.alert_info3') !!}</p>
+
+                <h3>{{ __('messages.alert_title4') }}</h3>
+                <p>{!! __('messages.alert_info4') !!}</p>
+                <p>{!! __('messages.alert_info5') !!}</p>
             </div>
         </main>
 
