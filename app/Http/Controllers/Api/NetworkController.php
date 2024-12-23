@@ -8,13 +8,68 @@ use Jenssegers\Agent\Agent;
 
 class NetworkController extends Controller
 {
+
     /**
-     * Retorna o IP do usuário.
+     * Retorna os IPs do usuário que está acessando a API.
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function getIp(Request $request)
+    {
+        $userIp = $this->getUserIp($request);
+        $ipv4 = filter_var($userIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) ? $userIp : null;
+        $ipv6 = filter_var($userIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) ? $userIp : null;
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'ipv4' => $ipv4,
+                'ipv6' => $ipv6,
+            ],
+        ]);
+    }
+
+    /**
+     * Obtém o IP do usuário considerando proxies e cabeçalhos confiáveis.
+     *
+     * @param Request $request
+     * @return string|null
+     */
+    private function getUserIp(Request $request)
+    {
+        $headers = [
+            'HTTP_CLIENT_IP',
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_X_FORWARDED',
+            'HTTP_X_CLUSTER_CLIENT_IP',
+            'HTTP_FORWARDED_FOR',
+            'HTTP_FORWARDED',
+            'REMOTE_ADDR',
+        ];
+
+        foreach ($headers as $header) {
+            if ($request->server($header)) {
+                $ips = explode(',', $request->server($header));
+                foreach ($ips as $ip) {
+                    $ip = trim($ip);
+                    if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                        return $ip;
+                    }
+                }
+            }
+        }
+
+        return $request->ip();
+    }
+
+    /**
+     * Retorna o IP do usuário por uma API externa.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getIpExternalApi(Request $request)
     {
         // Tenta capturar o IP enviado pelo cabeçalho
         $userPublicIp = $request->header('X-User-IP') ?? false;
