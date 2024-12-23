@@ -12,6 +12,7 @@ use App\Services\PisPasepService;
 use App\Services\CertidaoService;
 use App\Services\SenhaService;
 use App\Services\CepService;
+use App\Services\LoremIpsumService;
 use Illuminate\Http\Request;
 
 /**
@@ -28,6 +29,7 @@ class GeneratorController extends Controller
     protected $certidaoService;
     protected $senhaService;
     protected $cepService;
+    protected $loremIpsumService;
 
     public function __construct(
         CpfService $cpfService,
@@ -38,6 +40,7 @@ class GeneratorController extends Controller
         CertidaoService $certidao,
         SenhaService $senha,
         CepService $cep,
+        LoremIpsumService $loremIpsum,
     ){
         $this->cpfService = $cpfService;
         $this->rgService = $rgService;
@@ -47,6 +50,7 @@ class GeneratorController extends Controller
         $this->certidaoService = $certidao;
         $this->senhaService = $senha;
         $this->cepService = $cep;
+        $this->loremIpsumService = $loremIpsum;
     }
 
     /**
@@ -209,6 +213,14 @@ class GeneratorController extends Controller
         }
     }
 
+    /**
+     * Gera uma endereço válido.
+     *
+     * @param string|null $uf
+     * @param bool $formatted (Define se o CEP será formatado)
+     * @return string
+     * @throws \Exception
+     */
     public function endereco(Request $request) {
         try {
             // Captura os parâmetros opcionais
@@ -224,5 +236,26 @@ class GeneratorController extends Controller
         }
     }
 
+    /**
+     * Gera um Lorem Ipsum (Gerador de texto).
+     *
+     * @return string
+     * @throws \Exception
+     */
+    public function LoremIpsum(Request $request) {
+        try {
+            // Captura os parâmetros opcionais
+            $tamanho = (int) $request->query('length', 5);
+            $tipo = $request->query('type', 'paragrafos');
+            $formato = $request->query('format', 'texto');
 
+
+            // Gera o Lorem Ipsum
+            $loremIpsum = $this->loremIpsumService->generate($tamanho, $tipo, $formato);
+
+            return $this->successResponse(['lorem' => $loremIpsum]);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
 }
