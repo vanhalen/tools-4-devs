@@ -16,16 +16,16 @@ class NetworkController extends Controller
      */
     public function getIp(Request $request)
     {
-        // Captura o IP local
-        $localIp = $request->ip();
+        // Tenta capturar o IP enviado pelo cabeçalho
+        $userPublicIp = $request->header('X-User-IP') ?? false;
 
         // Captura o IP público e informações do provedor
-        $publicIpData = $this->getPublicIpData();
+        $publicIpData = $this->getPublicIpData($userPublicIp);
 
         return response()->json([
             'status' => true,
             'data' => [
-                'local_ip' => $localIp,
+                'local_ip' => $request->ip(),
                 'public_ip' => $publicIpData['ip'] ?? null,
                 'hostname' => $publicIpData['hostname'] ?? null,
                 'provider' => $publicIpData['org'] ?? null,
@@ -43,10 +43,10 @@ class NetworkController extends Controller
      *
      * @return string|null
      */
-    private function getPublicIpData()
+    private function getPublicIpData($ip)
     {
         try {
-            $response = file_get_contents('https://ipinfo.io/json');
+            $response = file_get_contents($ip ? "https://ipinfo.io/{$ip}/json" : "https://ipinfo.io/json");
             $data = json_decode($response, true);
 
             return $data;
