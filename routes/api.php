@@ -85,7 +85,7 @@ Route::get('/network/validate-ip', [NetworkController::class, 'validateIp']);
 Route::get('/network/resolve-dns', [NetworkController::class, 'resolveDns']);
 // http://127.0.0.1:8000/api/network/resolve-dns?host=google.com
 
-Route::get('/network/test-port', [NetworkController::class, 'testPort']);
-// http://127.0.0.1:8000/api/network/test-port?host=google.com.br&port=80
+Route::get('/network/port-test', [NetworkController::class, 'portTest']);
+// http://127.0.0.1:8000/api/network/port-test?host=google.com.br&port=80
 
 

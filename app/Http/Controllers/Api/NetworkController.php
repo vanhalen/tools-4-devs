@@ -222,7 +222,7 @@ class NetworkController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function testPort(Request $request)
+    public function portTest(Request $request)
     {
         $host = $request->query('host');
         $port = (int) $request->query('port');
