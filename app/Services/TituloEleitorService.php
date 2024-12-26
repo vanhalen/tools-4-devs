@@ -144,6 +144,7 @@ class TituloEleitorService
 
     public function getUf(string $titulo): ?string
     {
+        $titulo = preg_replace('/\D/', '', $titulo);
         $uf = intval(substr($titulo, 8, 2));  // Unidade da Federação
         return $this->getStateStr($uf);
     }
