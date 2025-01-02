@@ -6,7 +6,11 @@ class RgService
 {
 
     /**
-     * Valida um RG.
+     * Valida um RG de 9 dígitos.
+     * É importante ter em mente que o RG não possui uma regra unificada
+     * entre os estados, sendo assim, só contemplei a regra de 9 dígitos
+     * pois os RG's que possuem menos, cada um possui uma regra específica.
+     * Existem casos de não ter uma regra, podendo colocar números aleatórios.
      *
      * @param string $rg
      * @return bool
@@ -16,8 +20,8 @@ class RgService
         // Remove caracteres não numéricos
         $rg = preg_replace('/\D/', '', $rg);
 
-        // Verifica se o RG tem entre 8 e 9 dígitos (dependendo do estado)
-        if (strlen($rg) < 8 || strlen($rg) > 9) {
+        // Verifica se o RG tem 9 dígitos
+        if (strlen($rg) !== 9) {
             return false;
         }
 
@@ -26,27 +30,22 @@ class RgService
             return false;
         }
 
-        // Calcula o dígito verificador (se existir)
-        if (strlen($rg) == 9) {
-            $peso = 2;
-            $soma = 0;
+        // Calcula o dígito verificador
+        $peso = 2;
+        $soma = 0;
 
-            // Soma ponderada dos 8 primeiros dígitos
-            for ($i = 0; $i < 8; $i++) {
-                $soma += $rg[$i] * $peso;
-                $peso++;
-            }
-
-            // Calcula o dígito verificador
-            $resto = $soma % 11;
-            $digitoVerificador = $resto < 2 ? 0 : 11 - $resto;
-
-            // Valida o dígito verificador
-            return $rg[8] == $digitoVerificador;
+        // Soma ponderada dos 8 primeiros dígitos
+        for ($i = 0; $i < 8; $i++) {
+            $soma += $rg[$i] * $peso;
+            $peso++;
         }
 
-        // Caso o RG tenha apenas 8 dígitos, assume-se que é válido (sem DV)
-        return true;
+        // Calcula o dígito verificador
+        $resto = $soma % 11;
+        $digitoVerificador = $resto < 2 ? 0 : 11 - $resto;
+
+        // Valida o dígito verificador
+        return $rg[8] == $digitoVerificador;
     }
 
     /**
@@ -79,7 +78,7 @@ class RgService
         return implode('', $rg);
     }
 
-   private function calculateDigit(array $base)
+    private function calculateDigit(array $base)
     {
         $factor = 2; // Peso inicial
         $sum = 0;
