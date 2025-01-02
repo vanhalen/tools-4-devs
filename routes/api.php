@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\GeneratorController;
+use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\NetworkController;
 use App\Http\Controllers\Api\ValidatorController;
 use App\Http\Controllers\Api\HolidayController;
@@ -88,6 +89,13 @@ Route::get('/network/resolve-dns', [NetworkController::class, 'resolveDns']);
 
 Route::get('/network/port-test', [NetworkController::class, 'portTest']);
 // http://127.0.0.1:8000/api/network/port-test?host=google.com.br&port=80
+
+
+
+################
+# ENDEREÇO
+################
+Route::get('/address/search-cep', [AddressController::class, 'searchCep']);
 
 
 
