@@ -94,6 +94,54 @@ class CepService
     }
 
     /**
+     * Realiza a de rua.
+     *
+     * @param string $cep
+     */
+    public function buscarRua($uf, $city, $street)
+    {
+        // Valida a UF
+        if (is_null($uf) || strlen($uf) !== 2) {
+            throw new \Exception("UF inválida. Certifique-se de que possui exatamente 2 caracteres.");
+        }
+
+        // Valida a cidade
+        if (is_null($city) || strlen($city) < 3) {
+            throw new \Exception("O nome da cidade deve conter ao menos 3 caracteres.");
+        }
+
+        // Valida o nome da rua
+        if (is_null($street) || strlen($street) < 3) {
+            throw new \Exception("O nome da rua deve conter ao menos 3 caracteres.");
+        }
+
+        // Inicia a query para buscar no banco
+        $query = Cep::query()
+            ->where('uf', strtoupper($uf))
+            ->where('localidade', 'LIKE', '%' . $city . '%');
+
+        // Divide o nome da rua em palavras e cria filtros de busca
+        $street = urldecode($street);
+        $streetTerms = explode(',', $street);
+
+
+        foreach ($streetTerms as $term) {
+            $query->where('logradouro', 'LIKE', '%' . $term . '%');
+        }
+
+        // Busca os resultados
+        $results = $query->limit(50)->get();
+
+        // Retorna os resultados encontrados ou erro se nenhum resultado for encontrado
+        if (empty($results)) {
+            throw new \Exception("Nenhum logradouro encontrado para os critérios fornecidos.");
+        }
+
+        return $this->formatarRetorno($results, true);
+    }
+
+
+    /**
      * Seleciona um CEP aleatório do banco de dados.
      *
      * @param string|null $uf
@@ -236,13 +284,35 @@ class CepService
 
 
     /**
-     * Formata os dados do CEP para retorno.
+     * Formata os dados de um ou mais registros de CEP para retorno.
+     *
+     * @param array|Cep $cepModels
+     * @param bool $formatted
+     * @return array
+     */
+    private function formatarRetorno($cepModels, bool $formatted): array
+    {
+        // Verifica se é uma coleção de registros ou um único modelo
+        if (is_array($cepModels) || $cepModels instanceof \Illuminate\Support\Collection) {
+            $enderecos = [];
+            foreach ($cepModels as $cepModel) {
+                $enderecos[] = $this->formatarRetornoUnitario($cepModel, $formatted);
+            }
+            return $enderecos;
+        }
+
+        // Trata como registro único
+        return $this->formatarRetornoUnitario($cepModels, $formatted);
+    }
+
+    /**
+     * Formata os dados de um único registro de CEP para retorno.
      *
      * @param Cep $cepModel
      * @param bool $formatted
      * @return array
      */
-    private function formatarRetorno(Cep $cepModel, bool $formatted): array
+    private function formatarRetornoUnitario(Cep $cepModel, bool $formatted): array
     {
         $endereco = $cepModel->toArray();
 
@@ -259,6 +329,7 @@ class CepService
 
         return $endereco;
     }
+
 
 
 }
