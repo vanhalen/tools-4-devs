@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\GeneratorController;
+use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\NetworkController;
 use App\Http\Controllers\Api\ValidatorController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\HolidayController;
 use Illuminate\Support\Facades\Route;
+// use Illuminate\Http\Request;
 
 // Route::get('/users', function (Request $request) {
 //     return $request->user();
@@ -64,6 +66,9 @@ Route::get('/validator/titulo-eleitor', [ValidatorController::class, 'tituloElei
 Route::get('/validator/pis-pasep', [ValidatorController::class, 'pisPasep']);
 // http://127.0.0.1:8000/api/validator/pis-pasep?pispasep=528507860990
 
+Route::get('/validator/ip', [NetworkController::class, 'validateIp']);
+// http://127.0.0.1:8000/api/validator/ip?ip=127.0.0.0
+
 
 
 ################
@@ -79,9 +84,6 @@ Route::get('/network/browser', [NetworkController::class, 'getBrowser']);
 Route::get('/network/system', [NetworkController::class, 'getSystem']);
 // http://127.0.0.1:8000/api/network/system
 
-Route::get('/network/validate-ip', [NetworkController::class, 'validateIp']);
-// http://127.0.0.1:8000/api/network/validate-ip?ip=127.0.0.0
-
 Route::get('/network/resolve-dns', [NetworkController::class, 'resolveDns']);
 // http://127.0.0.1:8000/api/network/resolve-dns?host=google.com
 
@@ -89,3 +91,20 @@ Route::get('/network/port-test', [NetworkController::class, 'portTest']);
 // http://127.0.0.1:8000/api/network/port-test?host=google.com.br&port=80
 
 
+
+################
+# ENDEREÇO
+################
+Route::get('/address/search-cep', [AddressController::class, 'searchCep']);
+// http://127.0.0.1:8000/api/address/search-cep?cep=01304901
+Route::get('/address/search-street', [AddressController::class, 'searchStreet']);
+// http://127.0.0.1:8000/api/address/search-street?uf=RS&city=Porto%20Alegre&street=Domingos
+// http://127.0.0.1:8000/api/address/search-street?uf=RS&city=Porto%20Alegre&street=Domingos,Jose
+// http://127.0.0.1:8000/api/address/search-street?uf=RS&city=Porto%20Alegre&street=Domingos Jose
+
+
+###############
+# FERIADOS
+###############
+Route::get('/holidays/{year}', [HolidayController::class, 'index']);
+// http://127.0.0.1:8000/api/holidays/2024
