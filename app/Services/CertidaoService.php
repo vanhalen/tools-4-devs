@@ -147,7 +147,6 @@ class CertidaoService
         ]);
     }
 
-
     /**
      * Formata a matrícula em blocos legíveis.
      */
