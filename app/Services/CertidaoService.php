@@ -92,13 +92,12 @@ class CertidaoService
         return $remainder === 10 ? 1 : $remainder;
     }
 
-
-
     #################################################
-    #################################################
+    ################   GERADOR   ####################
     #################################################
     /**
      * Gera um número de matrícula para certidão.
+     * OBS.: O ano do documento deve ser a partir de 2010
      *
      * @param string $tipo
      * @param string|null $uf
@@ -115,78 +114,54 @@ class CertidaoService
 
         // Define UF (Estado), ano e cartório aleatoriamente se não fornecidos
         $uf = $uf ?? $this->getRandomUf();
-        $anoRegistro = $anoRegistro ?? date('Y');
+        $anoRegistro = $anoRegistro ?? random_int(2010, date('Y')); // Ano mínimo de 2010
         $codigoCartorio = $codigoCartorio ?? random_int(1, 99);
 
-        // Gera o número de matrícula
+        // Gera o número de matrícula sem os DVs
         $matricula = $this->generateMatricula($tipo, $uf, $anoRegistro, $codigoCartorio);
+
+        // Calcula os dígitos verificadores
+        $dv = $this->calculateDv($matricula);
+
+        // Adiciona os DVs no final da matrícula
+        $matricula .= $dv;
 
         // Formata o número, se necessário
         return $formatted ? $this->formatMatricula($matricula) : $matricula;
     }
 
-    private function generateMatricula($tipo, $uf, $anoRegistro, $codigoCartorio)
+    /**
+     * Gera a base da matrícula sem os DVs.
+     */
+    private function generateMatricula($tipo, $uf, $anoRegistro, $codigoCartorio): string
     {
-        $matricula = [];
-
-        // Sequencial único (6 dígitos)
-        $matricula[] = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
-
-        // Código da UF (2 dígitos)
-        $matricula[] = $this->getUfCode($uf);
-
-        // Código do Cartório (2 dígitos) - Cartórios válidos
-        $matricula[] = str_pad($codigoCartorio, 2, '0', STR_PAD_LEFT);
-
-        // Ano do Registro (4 dígitos)
-        $matricula[] = str_pad($anoRegistro, 4, '0', STR_PAD_LEFT);
-
-        // Tipo de Registro (1 dígito)
-        $matricula[] = $this->getTipoCode($tipo);
-
-        // Número do Livro (5 dígitos)
-        $matricula[] = str_pad(random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
-
-        // Número da Folha (3 dígitos)
-        $matricula[] = str_pad(random_int(10, 999), 3, '0', STR_PAD_LEFT);
-
-        // Número do Termo (7 dígitos)
-        $matricula[] = str_pad(random_int(1000000, 9999999), 7, '0', STR_PAD_LEFT);
-
-        // Dígito Verificador (2 dígitos)
-        $matricula[] = $this->calculateDigit(implode('', $matricula));
-
-        return implode('', $matricula);
+        return implode('', [
+            str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT), // Sequencial único
+            $this->getUfCode($uf),                                    // Código da UF
+            str_pad($codigoCartorio, 2, '0', STR_PAD_LEFT),           // Código do cartório
+            str_pad($anoRegistro, 4, '0', STR_PAD_LEFT),              // Ano do registro
+            $this->getTipoCode($tipo),                                // Tipo de registro
+            str_pad(random_int(10000, 99999), 5, '0', STR_PAD_LEFT),  // Número do livro
+            str_pad(random_int(10, 999), 3, '0', STR_PAD_LEFT),       // Número da folha
+            str_pad(random_int(1000000, 9999999), 7, '0', STR_PAD_LEFT) // Número do termo
+        ]);
     }
 
-    private function calculateDigit($base)
-    {
-        $sum = 0;
-        $factor = 2;
 
-        // Multiplica cada dígito da base pelo fator, começando do último
-        foreach (array_reverse(str_split($base)) as $digit) {
-            $sum += $digit * $factor;
-            $factor = $factor === 9 ? 2 : $factor + 1;
-        }
-
-        $remainder = $sum % 11;
-
-        // Se o resto for 0 ou 1, retorna "00", caso contrário, retorna "11 - resto"
-        return str_pad(($remainder < 2 ? 0 : 11 - $remainder), 2, '0', STR_PAD_LEFT);
-    }
-
-    private function formatMatricula($matricula)
+    /**
+     * Formata a matrícula em blocos legíveis.
+     */
+    private function formatMatricula($matricula): string
     {
         return substr($matricula, 0, 6) . ' ' . // Sequencial
-               substr($matricula, 6, 2) . ' ' . // UF
-               substr($matricula, 8, 2) . ' ' . // Cartório
-               substr($matricula, 10, 4) . ' ' . // Ano
-               substr($matricula, 14, 1) . ' ' . // Tipo
-               substr($matricula, 15, 5) . ' ' . // Livro
-               substr($matricula, 20, 3) . ' ' . // Folha
-               substr($matricula, 23, 7) . '-' . // Termo
-               substr($matricula, 30, 2);       // Dígito Verificador
+            substr($matricula, 6, 2) . ' ' . // UF
+            substr($matricula, 8, 2) . ' ' . // Cartório
+            substr($matricula, 10, 4) . ' ' . // Ano
+            substr($matricula, 14, 1) . ' ' . // Tipo
+            substr($matricula, 15, 5) . ' ' . // Livro
+            substr($matricula, 20, 3) . ' ' . // Folha
+            substr($matricula, 23, 7) . '-' . // Termo
+            substr($matricula, 30, 2);       // Dígitos verificadores
     }
 
     private function getUfCode($uf)
