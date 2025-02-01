@@ -4,6 +4,99 @@ namespace App\Services;
 
 class CertidaoService
 {
+
+    /**
+     * Valida o número de matrícula da certidão.
+     *
+     * @param string $matricula
+     * @return bool
+     */
+    public function validate(string $matricula): bool
+    {
+        // Remove formatação
+        $matricula = preg_replace('/[^0-9]/', '', $matricula);
+
+        // Verifica se a matrícula possui exatamente 32 dígitos
+        if (strlen($matricula) !== 32) {
+            return false;
+        }
+
+        // Divide a matrícula em partes
+        $base = substr($matricula, 0, 30); // Os primeiros 30 dígitos
+        $dv = substr($matricula, 30, 2);  // Últimos 2 dígitos (DV)
+
+        // Calcula o dígito verificador
+        $calculatedDv = $this->calculateDv($base);
+
+        // Compara o DV calculado com o DV fornecido
+        return $calculatedDv === $dv;
+    }
+
+    /**
+     * Calcula o dígito verificador (DV) com base na regra fornecida.
+     *
+     * @param string $base
+     * @return string
+     */
+    private function calculateDv(string $base): string
+    {
+        // Calcula o primeiro dígito verificador (primeiro peso fixo)
+        $firstDv = $this->calculateFirstDv($base);
+
+        // Calcula o segundo dígito verificador usando o primeiro DV
+        $secondDv = $this->calculateSecondDv($base, $firstDv);
+
+        return str_pad($firstDv, 1, '0', STR_PAD_LEFT) . str_pad($secondDv, 1, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Calcula o primeiro dígito verificador com base nos pesos fixos ajustados.
+     *
+     * @param string $base
+     * @return int
+     */
+    private function calculateFirstDv(string $base): int
+    {
+        $pesos = [2, 3, 4, 5, 6, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; 
+        $sum = 0;
+
+        foreach (str_split($base) as $index => $digit) {
+            $sum += (int)$digit * $pesos[$index];
+        }
+
+        $remainder = $sum % 11;
+
+        // Se o resto for 10, retorna 1. Caso contrário, retorna o resto.
+        return $remainder === 10 ? 1 : $remainder;
+    }
+
+    /**
+     * Calcula o segundo dígito verificador com base no primeiro DV.
+     *
+     * @param string $base
+     * @param int $firstDv
+     * @return int
+     */
+    private function calculateSecondDv(string $base, int $firstDv): int
+    {
+        $pesos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8];
+        $sum = $firstDv * 9; // O primeiro DV influencia diretamente o segundo cálculo.
+
+        foreach (str_split($base) as $index => $digit) {
+            $sum += (int)$digit * $pesos[$index];
+        }
+
+        $remainder = $sum % 11;
+
+        // Se o resto for 10, retorna 1. Caso contrário, retorna o resto.
+        return $remainder === 10 ? 1 : $remainder;
+    }
+
+
+
+    #################################################
+    #################################################
+    #################################################
     /**
      * Gera um número de matrícula para certidão.
      *
@@ -23,7 +116,7 @@ class CertidaoService
         // Define UF (Estado), ano e cartório aleatoriamente se não fornecidos
         $uf = $uf ?? $this->getRandomUf();
         $anoRegistro = $anoRegistro ?? date('Y');
-        $codigoCartorio = $codigoCartorio ?? random_int(1000, 9999);
+        $codigoCartorio = $codigoCartorio ?? random_int(1, 99);
 
         // Gera o número de matrícula
         $matricula = $this->generateMatricula($tipo, $uf, $anoRegistro, $codigoCartorio);
@@ -36,23 +129,29 @@ class CertidaoService
     {
         $matricula = [];
 
+        // Sequencial único (6 dígitos)
+        $matricula[] = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+
         // Código da UF (2 dígitos)
         $matricula[] = $this->getUfCode($uf);
 
-        // Código do Cartório (4 dígitos)
-        $matricula[] = str_pad($codigoCartorio, 4, '0', STR_PAD_LEFT);
+        // Código do Cartório (2 dígitos) - Cartórios válidos
+        $matricula[] = str_pad($codigoCartorio, 2, '0', STR_PAD_LEFT);
 
         // Ano do Registro (4 dígitos)
         $matricula[] = str_pad($anoRegistro, 4, '0', STR_PAD_LEFT);
 
-        // Número do Livro (3 dígitos)
-        $matricula[] = str_pad(random_int(1, 999), 3, '0', STR_PAD_LEFT);
+        // Tipo de Registro (1 dígito)
+        $matricula[] = $this->getTipoCode($tipo);
+
+        // Número do Livro (5 dígitos)
+        $matricula[] = str_pad(random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
 
         // Número da Folha (3 dígitos)
-        $matricula[] = str_pad(random_int(1, 999), 3, '0', STR_PAD_LEFT);
+        $matricula[] = str_pad(random_int(10, 999), 3, '0', STR_PAD_LEFT);
 
-        // Número do Termo (8 dígitos)
-        $matricula[] = str_pad(random_int(1, 99999999), 8, '0', STR_PAD_LEFT);
+        // Número do Termo (7 dígitos)
+        $matricula[] = str_pad(random_int(1000000, 9999999), 7, '0', STR_PAD_LEFT);
 
         // Dígito Verificador (2 dígitos)
         $matricula[] = $this->calculateDigit(implode('', $matricula));
@@ -65,27 +164,29 @@ class CertidaoService
         $sum = 0;
         $factor = 2;
 
-        // Multiplica cada dígito da base pelo fator
+        // Multiplica cada dígito da base pelo fator, começando do último
         foreach (array_reverse(str_split($base)) as $digit) {
             $sum += $digit * $factor;
-            $factor = $factor === 9 ? 2 : $factor + 1; // Reinicia o fator em 2 quando chega a 9
+            $factor = $factor === 9 ? 2 : $factor + 1;
         }
 
         $remainder = $sum % 11;
 
-        // Retorna 00 se o resto for 0 ou 1, caso contrário 11 - resto
+        // Se o resto for 0 ou 1, retorna "00", caso contrário, retorna "11 - resto"
         return str_pad(($remainder < 2 ? 0 : 11 - $remainder), 2, '0', STR_PAD_LEFT);
     }
 
     private function formatMatricula($matricula)
     {
-        return substr($matricula, 0, 2) . '.' .
-               substr($matricula, 2, 4) . '.' .
-               substr($matricula, 6, 4) . '.' .
-               substr($matricula, 10, 3) . '.' .
-               substr($matricula, 13, 3) . '.' .
-               substr($matricula, 16, 8) . '-' .
-               substr($matricula, 24, 2);
+        return substr($matricula, 0, 6) . ' ' . // Sequencial
+               substr($matricula, 6, 2) . ' ' . // UF
+               substr($matricula, 8, 2) . ' ' . // Cartório
+               substr($matricula, 10, 4) . ' ' . // Ano
+               substr($matricula, 14, 1) . ' ' . // Tipo
+               substr($matricula, 15, 5) . ' ' . // Livro
+               substr($matricula, 20, 3) . ' ' . // Folha
+               substr($matricula, 23, 7) . '-' . // Termo
+               substr($matricula, 30, 2);       // Dígito Verificador
     }
 
     private function getUfCode($uf)
@@ -99,18 +200,44 @@ class CertidaoService
             'SE' => '26', 'TO' => '27'
         ];
 
-        return $ufCodes[strtoupper($uf)] ?? str_pad(random_int(1, 27), 2, '0', STR_PAD_LEFT);
+        if (!isset($ufCodes[strtoupper($uf)])) {
+            throw new \Exception("UF inválida: {$uf}");
+        }
+
+        return $ufCodes[strtoupper($uf)];
+    }
+
+    private function getTipoCode($tipo)
+    {
+        $tipoCodes = [
+            'nascimento' => '1',
+            'casamento' => '2',
+            'obito' => '3',
+            'casamento-religioso' => '4'
+        ];
+
+        if (!isset($tipoCodes[strtolower($tipo)])) {
+            throw new \Exception("Tipo de certidão inválido: {$tipo}");
+        }
+
+        return $tipoCodes[strtolower($tipo)];
     }
 
     private function getRandomUf()
     {
-        $ufs = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+        $ufs = [
+            'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+            'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+            'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+        ];
+
         return $ufs[array_rand($ufs)];
     }
 
     private function validateTipo($tipo)
     {
         $tiposValidos = ['nascimento', 'casamento', 'obito', 'casamento-religioso'];
+
         if (!in_array(strtolower($tipo), $tiposValidos)) {
             throw new \Exception("Tipo de certidão inválido. Tipos válidos: " . implode(', ', $tiposValidos));
         }
