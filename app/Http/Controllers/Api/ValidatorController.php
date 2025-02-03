@@ -9,6 +9,7 @@ use App\Services\CnpjService;
 use App\Services\RgService;
 use App\Services\TituloEleitorService;
 use App\Services\PisPasepService;
+use App\Services\CertidaoService;
 use Illuminate\Http\Request;
 
 class ValidatorController extends Controller
@@ -19,6 +20,7 @@ class ValidatorController extends Controller
     protected $rgService;
     protected $tituloEleitorService;
     protected $pisPasepService;
+    protected $certidaoService;
 
     public function __construct(
         CpfService $cpfService,
@@ -26,6 +28,7 @@ class ValidatorController extends Controller
         RgService $rgService,
         TituloEleitorService $tituloEleitorService,
         PisPasepService $pisPasepService,
+        CertidaoService $certidaoService,
     )
     {
         $this->cpfService = $cpfService;
@@ -33,6 +36,7 @@ class ValidatorController extends Controller
         $this->rgService = $rgService;
         $this->tituloEleitorService = $tituloEleitorService;
         $this->pisPasepService = $pisPasepService;
+        $this->certidaoService = $certidaoService;
     }
 
     /**
@@ -87,6 +91,17 @@ class ValidatorController extends Controller
     public function pisPasep(Request $request) {
         try {
             return $this->successResponseValidate($request, 'pispasep', $this->pisPasepService);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
+    /**
+     * Valida uma certidão.
+     */
+    public function certidao(Request $request) {
+        try {
+            return $this->successResponseValidate($request, 'certidao', $this->certidaoService);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage());
         }

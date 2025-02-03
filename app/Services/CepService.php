@@ -94,7 +94,7 @@ class CepService
     }
 
     /**
-     * Realiza a de rua.
+     * Realiza a busca de rua.
      *
      * @param string $cep
      */

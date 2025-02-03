@@ -69,6 +69,9 @@ Route::get('/validator/pis-pasep', [ValidatorController::class, 'pisPasep']);
 Route::get('/validator/ip', [NetworkController::class, 'validateIp']);
 // http://127.0.0.1:8000/api/validator/ip?ip=127.0.0.0
 
+Route::get('/validator/certidao', [ValidatorController::class, 'certidao']);
+// http://127.0.0.1:8000/api/validator/certidao?certidao=528507860990
+
 
 
 ################
@@ -101,6 +104,9 @@ Route::get('/address/search-street', [AddressController::class, 'searchStreet'])
 // http://127.0.0.1:8000/api/address/search-street?uf=RS&city=Porto%20Alegre&street=Domingos
 // http://127.0.0.1:8000/api/address/search-street?uf=RS&city=Porto%20Alegre&street=Domingos,Jose
 // http://127.0.0.1:8000/api/address/search-street?uf=RS&city=Porto%20Alegre&street=Domingos Jose
+Route::get('/address/search-city', [AddressController::class, 'searchCity']);
+// http://127.0.0.1:8000/api/address/search-city?uf=RS&city=Porto
+
 
 
 ###############
