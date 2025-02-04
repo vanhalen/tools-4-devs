@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
 use Jenssegers\Agent\Agent;
 
 class NetworkController extends Controller
 {
+
+    use ApiResponser;
 
     /**
      * Retorna os IPs do usuário que está acessando a API.
@@ -20,12 +23,9 @@ class NetworkController extends Controller
         $ipv4 = $this->getIpByType($request, FILTER_FLAG_IPV4);
         $ipv6 = $this->getIpByType($request, FILTER_FLAG_IPV6);
 
-        return response()->json([
-            'status' => true,
-            'data' => [
-                'ipv4' => $ipv4,
-                'ipv6' => $ipv6,
-            ],
+        return $this->successResponse([
+            'ipv4' => $ipv4,
+            'ipv6' => $ipv6
         ]);
     }
 
@@ -72,20 +72,17 @@ class NetworkController extends Controller
         // Captura o IP público e informações do provedor
         $publicIpData = $this->getPublicIpData($userPublicIp);
 
-        return response()->json([
-            'status' => true,
-            'data' => [
-                'local_ip' => $request->ip(),
-                'public_ip' => $publicIpData['ip'] ?? null,
-                'hostname' => $publicIpData['hostname'] ?? null,
-                'provider' => $publicIpData['org'] ?? null,
-                'city' => $publicIpData['city'] ?? null,
-                'region' => $publicIpData['region'] ?? null,
-                'country' => $publicIpData['country'] ?? null,
-                'timezone' => $publicIpData['timezone'] ?? null,
-                'loc' => $publicIpData['loc'] ?? null,
-            ]
-        ], 200);
+        return $this->successResponse([
+            'local_ip' => $request->ip(),
+            'public_ip' => $publicIpData['ip'] ?? null,
+            'hostname' => $publicIpData['hostname'] ?? null,
+            'provider' => $publicIpData['org'] ?? null,
+            'city' => $publicIpData['city'] ?? null,
+            'region' => $publicIpData['region'] ?? null,
+            'country' => $publicIpData['country'] ?? null,
+            'timezone' => $publicIpData['timezone'] ?? null,
+            'loc' => $publicIpData['loc'] ?? null,
+        ]);
     }
 
     /**
@@ -120,13 +117,10 @@ class NetworkController extends Controller
         $browser = $agent->browser();
         $version = $agent->version($browser);
 
-        return response()->json([
-            'status' => true,
-            'data' => [
-                'browser' => $browser,
-                'version' => $version,
-            ]
-        ], 200);
+        return $this->successResponse([
+            'browser' => $browser,
+            'version' => $version,
+        ]);
     }
 
     /**
@@ -141,13 +135,10 @@ class NetworkController extends Controller
         $platform = $agent->platform();
         $version = $agent->version($platform);
 
-        return response()->json([
-            'status' => true,
-            'data' => [
-                'system' => $platform,
-                'version' => $version,
-            ]
-        ], 200);
+        return $this->successResponse([
+            'system' => $platform,
+            'version' => $version,
+        ]);
     }
 
     /**
@@ -162,20 +153,15 @@ class NetworkController extends Controller
 
         if (filter_var($ip, FILTER_VALIDATE_IP)) {
             $isPrivate = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) ? false : true;
-            return response()->json([
-                'status' => true,
-                'data' => [
-                    'ip' => $ip,
-                    'is_valid' => true,
-                    'is_public' => !$isPrivate
-                ]
-            ], 200);
+
+            return $this->successResponse([
+                'ip' => $ip,
+                'is_valid' => true,
+                'is_public' => !$isPrivate
+            ]);
         }
 
-        return response()->json([
-            'status' => false,
-            'message' => 'IP inválido.'
-        ], 400);
+        return $this->errorResponse('IP inválido');
     }
 
     /**
@@ -189,10 +175,7 @@ class NetworkController extends Controller
         $host = $request->query('host');
 
         if (!$host) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Nenhum domínio ou IP fornecido.'
-            ], 400);
+            return $this->errorResponse('Nenhum domínio ou IP fornecido.');
         }
 
         // Tenta resolver o DNS
@@ -200,19 +183,13 @@ class NetworkController extends Controller
             $resolvedIp = gethostbyname($host); // Resolve o IP do domínio
             $resolvedHost = @gethostbyaddr($resolvedIp); // Resolve o host reverso usando o IP
 
-            return response()->json([
-                'status' => true,
-                'data' => [
-                    'host' => $host,
-                    'resolved_ip' => $resolvedIp,
-                    'resolved_host' => $resolvedHost ?: 'Não disponível',
-                ]
-            ], 200);
+            return $this->successResponse([
+                'host' => $host,
+                'resolved_ip' => $resolvedIp,
+                'resolved_host' => $resolvedHost ?: 'Não disponível',
+            ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Erro ao resolver o DNS: ' . $e->getMessage()
-            ], 500);
+            return $this->errorResponse('Erro ao resolver o DNS: ' . $e->getMessage());
         }
     }
 
@@ -228,10 +205,7 @@ class NetworkController extends Controller
         $port = (int) $request->query('port');
 
         if (!$host || !$port) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Host e porta são obrigatórios.'
-            ], 400);
+            return $this->errorResponse('Host e porta são obrigatórios.');
         }
 
         // Testa a porta
@@ -239,29 +213,20 @@ class NetworkController extends Controller
             $connection = @fsockopen($host, $port, $errno, $errstr, 5); // Timeout de 5 segundos
             if ($connection) {
                 fclose($connection);
-                return response()->json([
-                    'status' => true,
-                    'data' => [
-                        'host' => $host,
-                        'port' => $port,
-                        'is_open' => true
-                    ]
-                ], 200);
+                return $this->successResponse([
+                    'host' => $host,
+                    'port' => $port,
+                    'is_open' => true
+                ]);
             } else {
-                return response()->json([
-                    'status' => true,
-                    'data' => [
-                        'host' => $host,
-                        'port' => $port,
-                        'is_open' => false
-                    ]
-                ], 200);
+                return $this->successResponse([
+                    'host' => $host,
+                    'port' => $port,
+                    'is_open' => false
+                ]);
             }
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Erro ao testar a porta: ' . $e->getMessage()
-            ], 500);
+            return $this->errorResponse('Erro ao testar a porta: ' . $e->getMessage());
         }
     }
 }

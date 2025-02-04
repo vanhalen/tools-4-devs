@@ -13,10 +13,7 @@ trait ApiResponser
      */
     protected function successResponse(array $data, int $statusCode = 200)
     {
-        return response()->json([
-            'status' => true,
-            'data' => $data,
-        ], $statusCode);
+        return response()->json(array_merge(['status' => true], $data), $statusCode);
     }
 
     /**
