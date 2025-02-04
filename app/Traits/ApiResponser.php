@@ -13,10 +13,7 @@ trait ApiResponser
      */
     protected function successResponse(array $data, int $statusCode = 200)
     {
-        return response()->json([
-            'status' => true,
-            'data' => $data,
-        ], $statusCode);
+        return response()->json(array_merge(['status' => true], $data), $statusCode);
     }
 
     /**
@@ -36,6 +33,9 @@ trait ApiResponser
         ], $statusCode);
     }
 
+    /**
+     * Resposta de sucesso para validadores
+     */
     protected function successResponseValidate($request, $arg, $service){
         $req = $request->query($arg);
         if (!$req) return $this->errorResponse(strtoupper($arg).' é obrigatório.');
