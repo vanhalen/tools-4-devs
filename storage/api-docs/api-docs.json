@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Tools4Devs API",
-        "description": "API para geração de documentos e dados válidos, projetada para devs que precisam de recursos como CPF, RG, senhas e outros geradores automatizados.",
+        "description": "API projetada para devs, oferecendo funcionalidades como busca de CEP e endereço, geradores e validadores de documentos, informações de rede e diversos outros recursos úteis para aplicações modernas.",
         "contact": {
             "name": "Rodrigo Chagas",
             "url": "https://rodrigorchagas.com.br",
@@ -15,6 +15,398 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/address/cep": {
+            "get": {
+                "tags": [
+                    "Endereços"
+                ],
+                "summary": "Busca um endereço pelo CEP",
+                "description": "Retorna o endereço correspondente ao CEP informado. Caso o CEP não esteja no banco de dados, ele será buscado via APIs externas e salvo automaticamente.",
+                "operationId": "searchCep",
+                "parameters": [
+                    {
+                        "name": "cep",
+                        "in": "query",
+                        "description": "CEP a ser consultado. Deve conter 8 dígitos numéricos (com ou sem formatação).",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "01001-000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Endereço retornado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "endereco": {
+                                            "properties": {
+                                                "cep": {
+                                                    "type": "string",
+                                                    "example": "01001-000"
+                                                },
+                                                "logradouro": {
+                                                    "type": "string",
+                                                    "example": "Praça da Sé"
+                                                },
+                                                "complemento": {
+                                                    "type": "string",
+                                                    "example": "lado ímpar"
+                                                },
+                                                "unidade": {
+                                                    "type": "string",
+                                                    "example": "Edifício da Sé"
+                                                },
+                                                "bairro": {
+                                                    "type": "string",
+                                                    "example": "Sé"
+                                                },
+                                                "localidade": {
+                                                    "type": "string",
+                                                    "example": "São Paulo"
+                                                },
+                                                "uf": {
+                                                    "type": "string",
+                                                    "example": "SP"
+                                                },
+                                                "estado": {
+                                                    "type": "string",
+                                                    "example": "São Paulo"
+                                                },
+                                                "regiao": {
+                                                    "type": "string",
+                                                    "example": "Sudeste"
+                                                },
+                                                "ibge": {
+                                                    "type": "string",
+                                                    "example": "3550308"
+                                                },
+                                                "gia": {
+                                                    "type": "string",
+                                                    "example": "1004"
+                                                },
+                                                "ddd": {
+                                                    "type": "string",
+                                                    "example": "11"
+                                                },
+                                                "siafi": {
+                                                    "type": "string",
+                                                    "example": "7107"
+                                                },
+                                                "localizacao_tipo": {
+                                                    "type": "string",
+                                                    "example": "Point"
+                                                },
+                                                "localizacao_longitude": {
+                                                    "type": "string",
+                                                    "example": "-46.63428906534399"
+                                                },
+                                                "localizacao_latitude": {
+                                                    "type": "string",
+                                                    "example": "-23.550430309662772"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro na consulta do CEP",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "CEP inválido. Certifique-se de que possui 8 dígitos."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/address/street": {
+            "get": {
+                "tags": [
+                    "Endereços"
+                ],
+                "summary": "Busca endereços pelo nome da rua",
+                "description": "Busca endereços baseados no nome da rua fornecido. O resultado será ordenado pela proximidade do nome do logradouro e terá um limite máximo de 50 registros. Quanto mais específicos forem os parâmetros de entrada, maior será a precisão do resultado.  \n     *     Exemplos de pesquisa:  \n     *     - /api/address/street?uf=SP&city=São Paulo&street=João  \n     *     - /api/address/street?uf=SP&city=São Paulo&street=João Antônio  \n     *     - /api/address/street?uf=SP&city=São Paulo&street=João,Antônio  \n     *     Quando múltiplos termos são informados com vírgula, a busca retornará resultados contendo ambos os termos, independentemente da ordem.",
+                "operationId": "searchStreet",
+                "parameters": [
+                    {
+                        "name": "uf",
+                        "in": "query",
+                        "description": "Unidade Federativa (UF) onde será feita a busca. Deve conter exatamente 2 caracteres.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "SP"
+                        }
+                    },
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "description": "Nome da cidade onde será feita a busca. Deve conter no mínimo 3 caracteres.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "São Paulo"
+                        }
+                    },
+                    {
+                        "name": "street",
+                        "in": "query",
+                        "description": "Nome da rua ou palavras-chave associadas ao logradouro. Múltiplos termos podem ser separados por vírgula para aumentar a precisão.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "João,Antônio"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Endereços encontrados com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "endereco": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "cep": {
+                                                        "type": "string",
+                                                        "example": "04696-210"
+                                                    },
+                                                    "logradouro": {
+                                                        "type": "string",
+                                                        "example": "Avenida Doutor Antonio João Abdalla"
+                                                    },
+                                                    "complemento": {
+                                                        "type": "string",
+                                                        "example": ""
+                                                    },
+                                                    "unidade": {
+                                                        "type": "string",
+                                                        "example": ""
+                                                    },
+                                                    "bairro": {
+                                                        "type": "string",
+                                                        "example": "Jurubatuba"
+                                                    },
+                                                    "localidade": {
+                                                        "type": "string",
+                                                        "example": "São Paulo"
+                                                    },
+                                                    "uf": {
+                                                        "type": "string",
+                                                        "example": "SP"
+                                                    },
+                                                    "estado": {
+                                                        "type": "string",
+                                                        "example": "São Paulo"
+                                                    },
+                                                    "regiao": {
+                                                        "type": "string",
+                                                        "example": "Sudeste"
+                                                    },
+                                                    "ibge": {
+                                                        "type": "string",
+                                                        "example": "3550308"
+                                                    },
+                                                    "gia": {
+                                                        "type": "string",
+                                                        "example": "1004"
+                                                    },
+                                                    "ddd": {
+                                                        "type": "string",
+                                                        "example": "11"
+                                                    },
+                                                    "siafi": {
+                                                        "type": "string",
+                                                        "example": "7107"
+                                                    },
+                                                    "localizacao_tipo": {
+                                                        "type": "string",
+                                                        "example": "Point"
+                                                    },
+                                                    "localizacao_longitude": {
+                                                        "type": "number",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    },
+                                                    "localizacao_latitude": {
+                                                        "type": "number",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro na busca por endereços",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "UF inválida. Certifique-se de que possui exatamente 2 caracteres."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/address/city": {
+            "get": {
+                "tags": [
+                    "Endereços"
+                ],
+                "summary": "Busca ou lista cidades",
+                "description": "Busca ou lista cidades com base nos parâmetros opcionais fornecidos, como UF e nome da cidade. Se nenhum parâmetro for fornecido, retorna todas as cidades disponíveis.",
+                "operationId": "searchCity",
+                "parameters": [
+                    {
+                        "name": "uf",
+                        "in": "query",
+                        "description": "Unidade Federativa (UF) para filtrar a busca. Deve conter exatamente 2 caracteres.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "SP"
+                        }
+                    },
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "description": "Nome parcial ou completo da cidade a ser buscada. Deve conter no mínimo 3 caracteres.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "São Paulo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cidades encontradas com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "cidade": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "ibge": {
+                                                        "type": "string",
+                                                        "example": "3550308"
+                                                    },
+                                                    "cidade": {
+                                                        "type": "string",
+                                                        "example": "São Paulo"
+                                                    },
+                                                    "uf": {
+                                                        "type": "string",
+                                                        "example": "SP"
+                                                    },
+                                                    "cep": {
+                                                        "type": "string",
+                                                        "example": "00000000"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro na busca por cidades",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "UF inválida. Certifique-se de que possui exatamente 2 caracteres."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/generator/cpf": {
             "get": {
                 "tags": [
@@ -84,14 +476,9 @@
                                             "type": "boolean",
                                             "example": true
                                         },
-                                        "data": {
-                                            "properties": {
-                                                "cpf": {
-                                                    "type": "string",
-                                                    "example": "123.456.789-00"
-                                                }
-                                            },
-                                            "type": "object"
+                                        "cpf": {
+                                            "type": "string",
+                                            "example": "123.456.789-00"
                                         }
                                     },
                                     "type": "object"
@@ -157,14 +544,9 @@
                                             "type": "boolean",
                                             "example": true
                                         },
-                                        "data": {
-                                            "properties": {
-                                                "rg": {
-                                                    "type": "string",
-                                                    "example": "12.345.678-9"
-                                                }
-                                            },
-                                            "type": "object"
+                                        "rg": {
+                                            "type": "string",
+                                            "example": "12.345.678-9"
                                         }
                                     },
                                     "type": "object"
@@ -230,14 +612,9 @@
                                             "type": "boolean",
                                             "example": true
                                         },
-                                        "data": {
-                                            "properties": {
-                                                "cnpj": {
-                                                    "type": "string",
-                                                    "example": "12.345.678/0001-95"
-                                                }
-                                            },
-                                            "type": "object"
+                                        "cnpj": {
+                                            "type": "string",
+                                            "example": "12.345.678/0001-95"
                                         }
                                     },
                                     "type": "object"
@@ -342,14 +719,9 @@
                                             "type": "boolean",
                                             "example": true
                                         },
-                                        "data": {
-                                            "properties": {
-                                                "tituloEleitor": {
-                                                    "type": "string",
-                                                    "example": "1234 5678 1234"
-                                                }
-                                            },
-                                            "type": "object"
+                                        "tituloEleitor": {
+                                            "type": "string",
+                                            "example": "1234 5678 1234"
                                         }
                                     },
                                     "type": "object"
@@ -415,14 +787,9 @@
                                             "type": "boolean",
                                             "example": true
                                         },
-                                        "data": {
-                                            "properties": {
-                                                "pispasep": {
-                                                    "type": "string",
-                                                    "example": "123.45678.90-1"
-                                                }
-                                            },
-                                            "type": "object"
+                                        "pispasep": {
+                                            "type": "string",
+                                            "example": "123.45678.90-1"
                                         }
                                     },
                                     "type": "object"
@@ -464,7 +831,7 @@
                     "Geradores"
                 ],
                 "summary": "Gera uma certidão válida",
-                "description": "Gera uma certidão válida com base nos parâmetros informados, como tipo, estado, ano de registro e cartório. A certidão pode ser formatada ou não.",
+                "description": "Gera uma certidão válida com base nos parâmetros informados, como tipo, estado, ano de registro (a partir de 2010) e cartório. A certidão pode ser formatada ou não.",
                 "operationId": "gerarCertidao",
                 "parameters": [
                     {
@@ -539,7 +906,7 @@
                         "required": false,
                         "schema": {
                             "type": "integer",
-                            "example": 123
+                            "example": 50
                         }
                     },
                     {
@@ -563,18 +930,13 @@
                                             "type": "boolean",
                                             "example": true
                                         },
-                                        "data": {
-                                            "properties": {
-                                                "certidao": {
-                                                    "type": "string",
-                                                    "example": "12345.67.89.0001.01234.5678.9012345-67"
-                                                },
-                                                "tipo": {
-                                                    "type": "string",
-                                                    "example": "nascimento"
-                                                }
-                                            },
-                                            "type": "object"
+                                        "certidao": {
+                                            "type": "string",
+                                            "example": "12345.67.89.0001.01234.5678.9012345-67"
+                                        },
+                                        "tipo": {
+                                            "type": "string",
+                                            "example": "nascimento"
                                         }
                                     },
                                     "type": "object"
@@ -677,14 +1039,9 @@
                                             "type": "boolean",
                                             "example": true
                                         },
-                                        "data": {
-                                            "properties": {
-                                                "senha": {
-                                                    "type": "string",
-                                                    "example": "Abc123!@#"
-                                                }
-                                            },
-                                            "type": "object"
+                                        "senha": {
+                                            "type": "string",
+                                            "example": "Abc123!@#"
                                         }
                                     },
                                     "type": "object"
@@ -789,32 +1146,71 @@
                                             "type": "boolean",
                                             "example": true
                                         },
-                                        "data": {
+                                        "endereco": {
                                             "properties": {
-                                                "endereco": {
-                                                    "properties": {
-                                                        "cep": {
-                                                            "type": "string",
-                                                            "example": "12345-678"
-                                                        },
-                                                        "logradouro": {
-                                                            "type": "string",
-                                                            "example": "Rua das Flores"
-                                                        },
-                                                        "bairro": {
-                                                            "type": "string",
-                                                            "example": "Jardim Primavera"
-                                                        },
-                                                        "cidade": {
-                                                            "type": "string",
-                                                            "example": "São Paulo"
-                                                        },
-                                                        "estado": {
-                                                            "type": "string",
-                                                            "example": "SP"
-                                                        }
-                                                    },
-                                                    "type": "object"
+                                                "cep": {
+                                                    "type": "string",
+                                                    "example": "12345-678"
+                                                },
+                                                "logradouro": {
+                                                    "type": "string",
+                                                    "example": "Rua das Flores"
+                                                },
+                                                "complemento": {
+                                                    "type": "string",
+                                                    "example": "Casa 123"
+                                                },
+                                                "unidade": {
+                                                    "type": "string",
+                                                    "example": "Condomínio das flores"
+                                                },
+                                                "bairro": {
+                                                    "type": "string",
+                                                    "example": "Jardim Primavera"
+                                                },
+                                                "localidade": {
+                                                    "type": "string",
+                                                    "example": "São Paulo"
+                                                },
+                                                "uf": {
+                                                    "type": "string",
+                                                    "example": "SP"
+                                                },
+                                                "estado": {
+                                                    "type": "string",
+                                                    "example": "São Paulo"
+                                                },
+                                                "regiao": {
+                                                    "type": "string",
+                                                    "example": "Sudeste"
+                                                },
+                                                "ibge": {
+                                                    "type": "string",
+                                                    "example": "1231231"
+                                                },
+                                                "gia": {
+                                                    "type": "string",
+                                                    "example": "1234"
+                                                },
+                                                "ddd": {
+                                                    "type": "string",
+                                                    "example": "11"
+                                                },
+                                                "siafi": {
+                                                    "type": "string",
+                                                    "example": "1234"
+                                                },
+                                                "localizacao_tipo": {
+                                                    "type": "string",
+                                                    "example": "Point"
+                                                },
+                                                "localizacao_longitude": {
+                                                    "type": "string",
+                                                    "example": "-11.123456789123456"
+                                                },
+                                                "localizacao_latitude": {
+                                                    "type": "string",
+                                                    "example": "-22.345678912345678"
                                                 }
                                             },
                                             "type": "object"
@@ -859,7 +1255,7 @@
                     "Geradores"
                 ],
                 "summary": "Gera texto Lorem Ipsum",
-                "description": "Este endpoint gera texto Lorem Ipsum com base nos parâmetros fornecidos, como tipo, formato e quantidade.",
+                "description": "Gera um texto Lorem Ipsum com base nos parâmetros fornecidos, como tipo, formato e quantidade.",
                 "operationId": "generateLoremIpsum",
                 "parameters": [
                     {
@@ -912,14 +1308,9 @@
                                             "type": "boolean",
                                             "example": true
                                         },
-                                        "data": {
-                                            "properties": {
-                                                "lorem": {
-                                                    "type": "string",
-                                                    "example": "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
-                                                }
-                                            },
-                                            "type": "object"
+                                        "lorem": {
+                                            "type": "string",
+                                            "example": "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
                                         }
                                     },
                                     "type": "object"
@@ -954,12 +1345,992 @@
                     }
                 }
             }
+        },
+        "/api/network/ip": {
+            "get": {
+                "tags": [
+                    "Rede e Internet"
+                ],
+                "summary": "Retorna os endereços IP do usuário",
+                "description": "Retorna o endereço IP local (IPv4 e IPv6) do usuário que está acessando a API.",
+                "operationId": "getIp",
+                "responses": {
+                    "200": {
+                        "description": "IPs retornados com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "ipv4": {
+                                            "type": "string",
+                                            "example": "192.168.0.1",
+                                            "nullable": true
+                                        },
+                                        "ipv6": {
+                                            "type": "string",
+                                            "example": "2001:db8::ff00:42:8329",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao obter os endereços IP",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao obter os endereços IP."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/network/browser": {
+            "get": {
+                "tags": [
+                    "Rede e Internet"
+                ],
+                "summary": "Retorna o navegador do usuário",
+                "description": "Retorna informações referente ao navegador do usuário.",
+                "operationId": "getBrowser",
+                "responses": {
+                    "200": {
+                        "description": "Informações do navegador retornadas com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "browser": {
+                                            "type": "string",
+                                            "example": "Chrome"
+                                        },
+                                        "version": {
+                                            "type": "string",
+                                            "example": "132.0.0.0"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao obter informações do navegador",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao obter informações do navegador."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/network/system": {
+            "get": {
+                "tags": [
+                    "Rede e Internet"
+                ],
+                "summary": "Retorna o sistema operacional do usuário",
+                "description": "Retorna informações referentes ao sistema operacional do usuário.",
+                "operationId": "getSystem",
+                "responses": {
+                    "200": {
+                        "description": "Informações do sistema operacional retornadas com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "system": {
+                                            "type": "string",
+                                            "example": "Windows"
+                                        },
+                                        "version": {
+                                            "type": "string",
+                                            "example": "10"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao obter informações do sistema operacional",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao obter informações do sistema operacional."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/network/resolve-dns": {
+            "get": {
+                "tags": [
+                    "Rede e Internet"
+                ],
+                "summary": "Resolve um domínio para IP ou vice-versa",
+                "description": "Resolve o IP associado a um domínio ou realiza a resolução reversa de IP para hostname.",
+                "operationId": "resolveDns",
+                "parameters": [
+                    {
+                        "name": "host",
+                        "in": "query",
+                        "description": "O domínio ou endereço IP a ser resolvido.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "google.com"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resolução DNS realizada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "host": {
+                                            "type": "string",
+                                            "example": "google.com"
+                                        },
+                                        "resolved_ip": {
+                                            "type": "string",
+                                            "example": "142.250.72.238"
+                                        },
+                                        "resolved_host": {
+                                            "type": "string",
+                                            "example": "lhr25s34-in-f14.1e100.net"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao resolver o domínio ou IP",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao resolver o domínio ou IP."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/network/port-test": {
+            "get": {
+                "tags": [
+                    "Rede e Internet"
+                ],
+                "summary": "Testa se uma porta está aberta em um IP ou domínio",
+                "description": "Verifica se uma porta específica está aberta em um endereço IP ou domínio fornecido.",
+                "operationId": "portTest",
+                "parameters": [
+                    {
+                        "name": "host",
+                        "in": "query",
+                        "description": "O domínio ou endereço IP a ser testado.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "google.com"
+                        }
+                    },
+                    {
+                        "name": "port",
+                        "in": "query",
+                        "description": "A porta a ser testada.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 80
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Teste de porta realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "host": {
+                                            "type": "string",
+                                            "example": "google.com"
+                                        },
+                                        "port": {
+                                            "type": "integer",
+                                            "example": 80
+                                        },
+                                        "is_open": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao testar a porta",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao testar a porta."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/validator/cpf": {
+            "get": {
+                "tags": [
+                    "Validadores"
+                ],
+                "summary": "Valida um CPF",
+                "description": "Verifica se o CPF informado é válido.",
+                "operationId": "validateCpf",
+                "parameters": [
+                    {
+                        "name": "cpf",
+                        "in": "query",
+                        "description": "CPF a ser validado.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "123.456.789-09"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Validação do CPF realizada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "cpf": {
+                                            "type": "string",
+                                            "example": "123.456.789-09"
+                                        },
+                                        "is_valid": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao validar o CPF",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao validar o CPF."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/validator/rg": {
+            "get": {
+                "tags": [
+                    "Validadores"
+                ],
+                "summary": "Valida um RG",
+                "description": "Verifica se o RG informado é válido.",
+                "operationId": "validateRg",
+                "parameters": [
+                    {
+                        "name": "rg",
+                        "in": "query",
+                        "description": "RG a ser validado.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "12.345.678-9"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Validação do RG realizada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "rg": {
+                                            "type": "string",
+                                            "example": "12.345.678-9"
+                                        },
+                                        "is_valid": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao validar o RG",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao validar o RG."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/validator/cnpj": {
+            "get": {
+                "tags": [
+                    "Validadores"
+                ],
+                "summary": "Valida um CNPJ",
+                "description": "Verifica se o CNPJ informado é válido.",
+                "operationId": "validateCnpj",
+                "parameters": [
+                    {
+                        "name": "cnpj",
+                        "in": "query",
+                        "description": "CNPJ a ser validado.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "12.345.678/0001-95"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Validação do CNPJ realizada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "cnpj": {
+                                            "type": "string",
+                                            "example": "12.345.678/0001-95"
+                                        },
+                                        "is_valid": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao validar o CNPJ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao validar o CNPJ."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/validator/titulo-eleitor": {
+            "get": {
+                "tags": [
+                    "Validadores"
+                ],
+                "summary": "Valida um Título de Eleitor",
+                "description": "Verifica se o Título de Eleitor informado é válido e retorna o estado (UF) associado.",
+                "operationId": "validateTituloEleitor",
+                "parameters": [
+                    {
+                        "name": "titulo",
+                        "in": "query",
+                        "description": "Título de Eleitor a ser validado.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "1234 5678 1234"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Validação do Título de Eleitor realizada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "titulo": {
+                                            "type": "string",
+                                            "example": "1234 5678 1234"
+                                        },
+                                        "uf": {
+                                            "type": "string",
+                                            "example": "SP"
+                                        },
+                                        "is_valid": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao validar o Título de Eleitor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao validar o Título de Eleitor."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/validator/pis-pasep": {
+            "get": {
+                "tags": [
+                    "Validadores"
+                ],
+                "summary": "Valida um PIS/PASEP",
+                "description": "Verifica se o PIS/PASEP informado é válido.",
+                "operationId": "validatePisPasep",
+                "parameters": [
+                    {
+                        "name": "pispasep",
+                        "in": "query",
+                        "description": "PIS/PASEP a ser validado.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "123.45678.90-1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Validação do PIS/PASEP realizada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "pispasep": {
+                                            "type": "string",
+                                            "example": "123.45678.90-1"
+                                        },
+                                        "is_valid": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao validar o PIS/PASEP",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao validar o PIS/PASEP."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/validator/certidao": {
+            "get": {
+                "tags": [
+                    "Validadores"
+                ],
+                "summary": "Valida uma certidão",
+                "description": "Verifica se a certidão informada é válida e retorna informações detalhadas como tipo, estado, ano e cartório.",
+                "operationId": "validateCertidao",
+                "parameters": [
+                    {
+                        "name": "certidao",
+                        "in": "query",
+                        "description": "Número da certidão a ser validado.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "12345.67.89.0001.01234.5678.9012345-67"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Validação da certidão realizada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "certidao": {
+                                            "type": "string",
+                                            "example": "12345.67.89.0001.01234.5678.9012345-67"
+                                        },
+                                        "is_valid": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "tipo": {
+                                            "type": "string",
+                                            "example": "nascimento"
+                                        },
+                                        "uf": {
+                                            "type": "string",
+                                            "example": "SP"
+                                        },
+                                        "ano": {
+                                            "type": "integer",
+                                            "example": 2023
+                                        },
+                                        "cod_cartorio": {
+                                            "type": "integer",
+                                            "example": 50
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao validar a certidão",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao validar a certidão."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/validator/ip": {
+            "get": {
+                "tags": [
+                    "Validadores"
+                ],
+                "summary": "Valida um endereço IP",
+                "description": "Verifica se o endereço IP informado é válido e se é público ou privado.",
+                "operationId": "validateIp",
+                "parameters": [
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "description": "Endereço IP a ser validado.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "192.168.0.1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Validação do IP realizada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "ip": {
+                                            "type": "string",
+                                            "example": "192.168.0.1"
+                                        },
+                                        "is_valid": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "is_public": {
+                                            "type": "boolean",
+                                            "example": false
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro ao validar o endereço IP",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Erro ao validar o endereço IP."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/holidays/{year}": {
+            "get": {
+                "tags": [
+                    "Feriados"
+                ],
+                "summary": "Lista todos os feriados nacionais",
+                "description": "Retorna a lista de feriados nacionais fixos e móveis para o ano especificado.",
+                "operationId": "getHolidays",
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "path",
+                        "description": "Ano para o qual os feriados serão listados (entre 1900 e 2199).",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2025
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Feriados listados com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "date": {
+                                                "type": "string",
+                                                "example": "2025-04-21"
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Tiradentes"
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "example": "nacional"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro na requisição",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Ano fora do intervalo suportado entre 1900 e 2199."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "tags": [
         {
+            "name": "Endereços",
+            "description": "Endereços"
+        },
+        {
             "name": "Geradores",
             "description": "Geradores"
+        },
+        {
+            "name": "Rede e Internet",
+            "description": "Rede e Internet"
+        },
+        {
+            "name": "Validadores",
+            "description": "Validadores"
+        },
+        {
+            "name": "Feriados",
+            "description": "Feriados"
         }
-    ]
+    ],
+    "externalDocs": {
+        "description": "Saiba mais sobre a Tools4Devs",
+        "url": "https://tools4devs.rodrigorchagas.com.br/"
+    }
 }

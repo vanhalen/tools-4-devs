@@ -5,7 +5,7 @@
 
 ## Sobre o Tools4Devs
 
-**Tools4Devs** é uma API e uma coleção de ferramentas voltadas para devs e profissionais da web. Inclui funcionalidades como geração e validação de documentos, manipulação de dados, busca de CEP, informações de rede e geração de textos como lorem ipsum. O objetivo do **Tools4Devs** é facilitar a integração e otimizar o fluxo de trabalho em projetos de desenvolvimento.
+**Tools4Devs** é uma API e uma coleção de ferramentas voltadas para devs e profissionais da web. Inclui funcionalidades como busca de CEP e endereço, geração e validação de documentos, manipulação de dados, informações de rede, e muito mais. O objetivo do **Tools4Devs** é facilitar a integração e otimizar o fluxo de trabalho em projetos de desenvolvimento.
 
 
 ### 🌐 Acesse a API
@@ -23,10 +23,8 @@ O **Tools4Devs** é uma API gratuita, acesse o link abaixo (GET) para ver o reto
 Exemplo de retorno JSON:
 ```json
 {
-  "status": true,
-  "data": {
-    "cpf": "674.920.231-46"
-  }
+   "status": true,
+   "cpf": "674.920.231-46"
 }
 ```
 

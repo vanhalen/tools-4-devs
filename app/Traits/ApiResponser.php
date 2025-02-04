@@ -33,6 +33,9 @@ trait ApiResponser
         ], $statusCode);
     }
 
+    /**
+     * Resposta de sucesso para validadores
+     */
     protected function successResponseValidate($request, $arg, $service){
         $req = $request->query($arg);
         if (!$req) return $this->errorResponse(strtoupper($arg).' é obrigatório.');
