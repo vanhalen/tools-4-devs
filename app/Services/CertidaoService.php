@@ -11,14 +11,20 @@ class CertidaoService
      * @param string $matricula
      * @return bool
      */
-    public function validate(string $matricula): bool
+    public function validate(string $matricula): array
     {
         // Remove formatação
         $matricula = preg_replace('/[^0-9]/', '', $matricula);
 
         // Verifica se a matrícula possui exatamente 32 dígitos
         if (strlen($matricula) !== 32) {
-            return false;
+            return [
+                'is_valid' => false,
+                'tipo' => null,
+                'uf' => null,
+                'ano' => null,
+                'cod_cartorio' => null
+            ];
         }
 
         // Divide a matrícula em partes
@@ -28,8 +34,18 @@ class CertidaoService
         // Calcula o dígito verificador
         $calculatedDv = $this->calculateDv($base);
 
-        // Compara o DV calculado com o DV fornecido
-        return $calculatedDv === $dv;
+        $tipo = $this->mapTipo(substr($matricula, 14, 1));
+        $uf = $this->mapUf(substr($matricula, 6, 2));
+        $ano = substr($matricula, 10, 4);
+        $codigoCartorio = substr($matricula, 8, 2);
+
+        return [
+            'is_valid' => $calculatedDv === $dv,
+            'tipo' => $tipo,
+            'uf' => $uf,
+            'ano' => $ano,
+            'cod_cartorio' => $codigoCartorio
+        ];
     }
 
     /**
@@ -92,6 +108,34 @@ class CertidaoService
         return $remainder === 10 ? 1 : $remainder;
     }
 
+
+    private function mapTipo(string $code): string
+    {
+        $tipos = [
+            '1' => 'nascimento',
+            '2' => 'casamento',
+            '3' => 'obito',
+            '4' => 'casamento-religioso'
+        ];
+
+        return $tipos[$code] ?? 'desconhecido';
+    }
+
+    private function mapUf(string $code): string
+    {
+        $ufCodes = array_flip([
+            'AC' => '01', 'AL' => '02', 'AP' => '03', 'AM' => '04', 'BA' => '05',
+            'CE' => '06', 'DF' => '07', 'ES' => '08', 'GO' => '09', 'MA' => '10',
+            'MT' => '11', 'MS' => '12', 'MG' => '13', 'PA' => '14', 'PB' => '15',
+            'PR' => '16', 'PE' => '17', 'PI' => '18', 'RJ' => '19', 'RN' => '20',
+            'RS' => '21', 'RO' => '22', 'RR' => '23', 'SC' => '24', 'SP' => '25',
+            'SE' => '26', 'TO' => '27'
+        ]);
+
+        return $ufCodes[$code] ?? 'desconhecido';
+    }
+
+
     #################################################
     ################   GERADOR   ####################
     #################################################
@@ -107,15 +151,16 @@ class CertidaoService
      * @return string
      * @throws \Exception
      */
-    public function generate($tipo = 'nascimento', $uf = null, $anoRegistro = null, $codigoCartorio = null, $formatted = true)
+    public function generate($tipo = null, $uf = null, $anoRegistro = null, $codigoCartorio = null, $formatted = true)
     {
+
+        if (is_null($uf) || strtolower($uf) === 'null') { $uf = $this->getRandomUf(); }
+        if (is_null($tipo) || strtolower($tipo) === 'null') { $tipo = $this->getRandomTipo(); }
+        if (is_null($anoRegistro) || strtolower($anoRegistro) === 'null') { $anoRegistro = random_int(2010, date('Y')); } // Ano mínimo de 2010
+        if (is_null($codigoCartorio) || strtolower($codigoCartorio) === 'null') { $codigoCartorio = random_int(1, 99); }
+
         // Valida o tipo de certidão
         $this->validateTipo($tipo);
-
-        // Define UF (Estado), ano e cartório aleatoriamente se não fornecidos
-        $uf = $uf ?? $this->getRandomUf();
-        $anoRegistro = $anoRegistro ?? random_int(2010, date('Y')); // Ano mínimo de 2010
-        $codigoCartorio = $codigoCartorio ?? random_int(1, 99);
 
         // Gera o número de matrícula sem os DVs
         $matricula = $this->generateMatricula($tipo, $uf, $anoRegistro, $codigoCartorio);
@@ -127,7 +172,13 @@ class CertidaoService
         $matricula .= $dv;
 
         // Formata o número, se necessário
-        return $formatted ? $this->formatMatricula($matricula) : $matricula;
+        return [
+            'certidao' => $formatted ? $this->formatMatricula($matricula) : $matricula,
+            'tipo' => $tipo,
+            'uf' => $uf,
+            'ano' => $anoRegistro,
+            'cod_cartorio' => $codigoCartorio
+        ];
     }
 
     /**
@@ -206,6 +257,12 @@ class CertidaoService
         ];
 
         return $ufs[array_rand($ufs)];
+    }
+    private function getRandomTipo()
+    {
+        $tiposValidos = ['nascimento', 'casamento', 'obito', 'casamento-religioso'];
+
+        return $tiposValidos[array_rand($tiposValidos)];
     }
 
     private function validateTipo($tipo)
