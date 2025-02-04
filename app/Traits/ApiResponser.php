@@ -46,6 +46,16 @@ trait ApiResponser
             $uf = $service->getUf($req);
             return $this->successResponse([$arg => $req, 'uf' => $uf, 'is_valid' => $isValid]);
         }
+        if($arg === 'certidao'){
+            return $this->successResponse([
+                $arg => $req,
+                'is_valid' => $isValid['is_valid'],
+                'tipo' => $isValid['tipo'],
+                'uf' => $isValid['uf'],
+                'ano' => $isValid['ano'],
+                'cod_cartorio' => $isValid['cod_cartorio']
+        ]);
+        }
 
         return $this->successResponse([$arg => $req, 'is_valid' => $isValid]);
     }

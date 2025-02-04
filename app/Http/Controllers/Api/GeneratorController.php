@@ -169,16 +169,22 @@ class GeneratorController extends Controller
     public function certidao(Request $request) {
         try {
             // Captura os parâmetros opcionais
-            $tipo = $request->query('type', 'nascimento');
+            $tipo = $request->query('type', null);
             $uf = $request->query('uf', null);
             $anoRegistro = $request->query('year', null);
             $codigoCartorio = $request->query('notary', null);
             $formatted = filter_var($request->query('formatted', true), FILTER_VALIDATE_BOOLEAN);
 
             // Gera o número da certidão
-            $certidao = $this->certidaoService->generate($tipo, $uf, $anoRegistro, $codigoCartorio, $formatted);
+            $result = $this->certidaoService->generate($tipo, $uf, $anoRegistro, $codigoCartorio, $formatted);
 
-            return $this->successResponse(['certidao' => $certidao, 'tipo' => $tipo]);
+            return $this->successResponse([
+                'certidao' => $result['certidao'],
+                'tipo' => $result['tipo'],
+                'uf' => $result['uf'],
+                'ano' => $result['ano'],
+                'cod_cartorio' => $result['cod_cartorio'],
+            ]);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
