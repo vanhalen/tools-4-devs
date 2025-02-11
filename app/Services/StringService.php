@@ -136,4 +136,36 @@ class StringService
         return implode('', $sentences);
     }
 
+    ######
+
+    /**
+     * Inverte o texto mantendo os caracteres na ordem inversa.
+     *
+     * @param string $text
+     * @return string
+     */
+    public function reverseText(string $text): string
+    {
+        return $this->mb_strrev($text);
+    }
+
+    /**
+     * Função auxiliar para inverter strings multibyte corretamente.
+     *
+     * @param string $text
+     * @return string
+     */
+    private function mb_strrev(string $text): string
+    {
+        $length = mb_strlen($text);
+        $reversed = '';
+
+        while ($length-- > 0) {
+            $reversed .= mb_substr($text, $length, 1);
+        }
+
+        return $reversed;
+    }
+
+
 }

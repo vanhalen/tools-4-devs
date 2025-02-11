@@ -73,5 +73,29 @@ class StringController extends Controller
         }
     }
 
+    /**
+     * Inverte o texto.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reverseText(Request $request)
+    {
+        try {
+            $text = $request->input('text');
+
+            if (!$text) {
+                return $this->errorResponse('O campo "text" é obrigatório.', 400);
+            }
+
+            $reversedText = $this->stringService->reverseText($text);
+
+            return $this->successResponse(['reversed_text' => $reversedText]);
+
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
 }
 

@@ -112,6 +112,7 @@ Route::get('/network/port-test', [NetworkController::class, 'portTest']);
 #######################
 Route::post('/string/character-count', [StringController::class, 'characterCount']);
 Route::post('/string/convert-case', [StringController::class, 'convertCase']);
+Route::post('/string/reverse', [StringController::class, 'reverseText']);
 
 
 
