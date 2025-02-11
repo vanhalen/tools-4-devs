@@ -63,4 +63,77 @@ class StringService
         $seconds = ceil(($time - $minutes) * 60);
         return "{$minutes}m {$seconds}s";
     }
+
+
+    ######
+
+    /**
+     * Converte o texto para diferentes formatos de maiúsculas/minúsculas.
+     *
+     * @param string $text
+     * @param string $type
+     * @return string
+     * @throws \Exception
+     */
+    public function convertCase(string $text, string $type): string
+    {
+        switch (strtolower($type)) {
+            case 'uppercase': // Tudo em maiúsculas
+                return strtoupper($text);
+
+            case 'lowercase': // Tudo em minúsculas
+                return strtolower($text);
+
+            case 'alternating': // Alternado ex: "Oi VoCê EsTá BeM?"
+                return $this->toAlternatingCase($text);
+
+            case 'capitalize_first_letter': // Primeira letra de cada palavra
+                return ucwords(strtolower($text));
+
+            case 'capitalize_first_sentence': // Primeira letra da frase
+                return $this->capitalizeFirstSentence($text);
+
+            default:
+                throw new \Exception("Tipo de conversão inválido: {$type}. Tipos válidos: uppercase, lowercase, alternating, capitalize_first_letter, capitalize_first_sentence.");
+        }
+    }
+
+    /**
+     * Converte o texto para o formato alternado ex: "Oi VoCê EsTá BeM?"
+     *
+     * @param string $text
+     * @return string
+     */
+    private function toAlternatingCase(string $text): string
+    {
+        $result = '';
+        $toggle = true;
+
+        foreach (str_split($text) as $char) {
+            if (ctype_alpha($char)) {
+                $result .= $toggle ? strtoupper($char) : strtolower($char);
+                $toggle = !$toggle;
+            } else {
+                $result .= $char;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Converte a primeira letra da frase em maiúsculo.
+     *
+     * @param string $text
+     * @return string
+     */
+    private function capitalizeFirstSentence(string $text): string
+    {
+        $sentences = preg_split('/([.!?]\s*)/', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+        for ($i = 0; $i < count($sentences); $i += 2) {
+            $sentences[$i] = ucfirst(strtolower($sentences[$i]));
+        }
+        return implode('', $sentences);
+    }
+
 }

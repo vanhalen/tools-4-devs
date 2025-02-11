@@ -111,6 +111,7 @@ Route::get('/network/port-test', [NetworkController::class, 'portTest']);
 # MANIPULAÇÃO DE TEXTO
 #######################
 Route::post('/string/character-count', [StringController::class, 'characterCount']);
+Route::post('/string/convert-case', [StringController::class, 'convertCase']);
 
 
 

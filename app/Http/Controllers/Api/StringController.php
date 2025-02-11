@@ -47,5 +47,31 @@ class StringController extends Controller
             return $this->errorResponse($e->getMessage());
         }
     }
+
+    /**
+     * Converter maiúsculas e minúsculas
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function convertCase(Request $request)
+    {
+        try {
+            $text = $request->input('text');
+            $type = $request->input('type', 'uppercase');
+
+            if (!$text) {
+                return $this->errorResponse('O campo "text" é obrigatório.', 400);
+            }
+
+            $result = $this->stringService->convertCase($text, $type);
+
+            return $this->successResponse(['converted_text' => $result]);
+
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
+
 }
 
