@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\NetworkController;
 use App\Http\Controllers\Api\ValidatorController;
 use App\Http\Controllers\Api\HolidayController;
+use App\Http\Controllers\Api\StringController;
 use Illuminate\Support\Facades\Route;
 // use Illuminate\Http\Request;
 
@@ -15,9 +16,22 @@ use Illuminate\Support\Facades\Route;
 
 
 ################
+# ENDEREÇO
+################
+Route::get('/address/cep', [AddressController::class, 'searchCep']);
+// http://127.0.0.1:8000/api/address/cep?cep=01304901
+Route::get('/address/street', [AddressController::class, 'searchStreet']);
+// http://127.0.0.1:8000/api/address/street?uf=RS&city=Porto%20Alegre&street=Domingos
+// http://127.0.0.1:8000/api/address/street?uf=RS&city=Porto%20Alegre&street=Domingos,Jose
+// http://127.0.0.1:8000/api/address/street?uf=RS&city=Porto%20Alegre&street=Domingos Jose
+Route::get('/address/city', [AddressController::class, 'searchCity']);
+// http://127.0.0.1:8000/api/address/city?uf=RS&city=Porto
+
+
+
+################
 # GERADORES
 ################
-
 Route::get('/generator/cpf', [GeneratorController::class, 'cpf']);
 // http://127.0.0.1:8000/api/generator/cpf?formatted=true&uf=MG
 
@@ -50,7 +64,6 @@ Route::get('/generator/lorem-ipsum', [GeneratorController::class, 'loremIpsum'])
 ################
 # VALIDADORES
 ################
-
 Route::get('/validator/cpf', [ValidatorController::class, 'cpf']);
 // http://127.0.0.1:8000/api/validator/cpf?cpf=43973515387
 
@@ -77,7 +90,6 @@ Route::get('/validator/certidao', [ValidatorController::class, 'certidao']);
 ################
 # NETWORK - REDE
 ################
-
 Route::get('/network/ip', [NetworkController::class, 'getIp']);
 // http://127.0.0.1:8000/api/network/ip
 
@@ -95,17 +107,10 @@ Route::get('/network/port-test', [NetworkController::class, 'portTest']);
 
 
 
-################
-# ENDEREÇO
-################
-Route::get('/address/cep', [AddressController::class, 'searchCep']);
-// http://127.0.0.1:8000/api/address/cep?cep=01304901
-Route::get('/address/street', [AddressController::class, 'searchStreet']);
-// http://127.0.0.1:8000/api/address/street?uf=RS&city=Porto%20Alegre&street=Domingos
-// http://127.0.0.1:8000/api/address/street?uf=RS&city=Porto%20Alegre&street=Domingos,Jose
-// http://127.0.0.1:8000/api/address/street?uf=RS&city=Porto%20Alegre&street=Domingos Jose
-Route::get('/address/city', [AddressController::class, 'searchCity']);
-// http://127.0.0.1:8000/api/address/city?uf=RS&city=Porto
+#######################
+# MANIPULAÇÃO DE TEXTO
+#######################
+Route::post('/string/character-count', [StringController::class, 'characterCount']);
 
 
 
