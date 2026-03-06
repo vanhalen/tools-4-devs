@@ -104,6 +104,7 @@ Route::get('/address/street', [AddressController::class, 'searchStreet']);
 // http://127.0.0.1:8000/api/address/street?uf=RS&city=Porto%20Alegre&street=Domingos
 // http://127.0.0.1:8000/api/address/street?uf=RS&city=Porto%20Alegre&street=Domingos,Jose
 // http://127.0.0.1:8000/api/address/street?uf=RS&city=Porto%20Alegre&street=Domingos Jose
+// http://127.0.0.1:8000/api/address/street?uf=RS&city=Porto%20Alegre&street=Domingos&apenas_db=1 (só base, sem ViaCEP)
 Route::get('/address/city', [AddressController::class, 'searchCity']);
 // http://127.0.0.1:8000/api/address/city?uf=RS&city=Porto
 

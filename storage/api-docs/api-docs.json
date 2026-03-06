@@ -187,6 +187,16 @@
                             "type": "string",
                             "example": "João,Antônio"
                         }
+                    },
+                    {
+                        "name": "apenas_db",
+                        "in": "query",
+                        "description": "Se true (ou 1), retorna apenas os resultados já salvos na base, sem consultar a API externa. Útil para respostas mais rápidas quando a lista completa não é necessária.",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
                     }
                 ],
                 "responses": {
