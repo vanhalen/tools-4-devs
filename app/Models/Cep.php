@@ -15,6 +15,7 @@ class Cep extends Model
         'cep',
         'logradouro',
         'complemento',
+        'unidade',
         'bairro',
         'localidade',
         'uf',

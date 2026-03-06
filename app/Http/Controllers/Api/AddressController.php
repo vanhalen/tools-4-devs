@@ -46,17 +46,19 @@ class AddressController extends Controller
     }
     /**
      * Busca um endereço a partir do nome da rua fornecido
-     * e retorna no máximo 50 itens
+     * e retorna no máximo 50 itens.
+     * Por padrão sincroniza com ViaCEP para lista completa; use apenas_db=1 para só a base.
      *
      * @throws \Exception
      */
     public function searchStreet(Request $request) {
         try {
-        $uf = $request->query('uf');
-        $city = $request->query('city');
-        $street = $request->query('street');
+            $uf = $request->query('uf');
+            $city = $request->query('city');
+            $street = $request->query('street');
+            $apenasDb = filter_var($request->query('apenas_db', false), FILTER_VALIDATE_BOOLEAN);
 
-        $results = $this->cepService->buscarRua($uf, $city, $street);
+            $results = $this->cepService->buscarRua($uf, $city, $street, $apenasDb);
 
             return $this->successResponse(['endereco' => $results]);
         } catch (\Exception $e) {

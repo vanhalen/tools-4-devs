@@ -117,6 +117,13 @@ class ApiDocumentation
      *         required=true,
      *         @OA\Schema(type="string", example="João,Antônio")
      *     ),
+     *     @OA\Parameter(
+     *         name="apenas_db",
+     *         in="query",
+     *         description="Se true (ou 1), retorna apenas os resultados já salvos na base, sem consultar a API externa. Útil para respostas mais rápidas quando a lista completa não é necessária.",
+     *         required=false,
+     *         @OA\Schema(type="boolean", example=true)
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Endereços encontrados com sucesso",
