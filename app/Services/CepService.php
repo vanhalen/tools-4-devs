@@ -95,10 +95,16 @@ class CepService
 
     /**
      * Realiza a busca de rua.
+     * Por padrão sempre sincroniza com o ViaCEP (lista completa e base atualizada).
+     * Use $apenasDb = true para retornar só o que já está no banco (mais rápido, pode estar incompleto).
      *
-     * @param string $cep
+     * @param string $uf
+     * @param string $city
+     * @param string $street
+     * @param bool $apenasDb Se true, não consulta ViaCEP; só retorna resultados da base (padrão false)
+     * @return array
      */
-    public function buscarRua($uf, $city, $street)
+    public function buscarRua($uf, $city, $street, $apenasDb = false)
     {
         // Valida a UF
         if (is_null($uf) || strlen($uf) !== 2) {
@@ -122,18 +128,54 @@ class CepService
 
         // Divide o nome da rua em palavras e cria filtros de busca
         $street = urldecode($street);
-        $streetTerms = explode(',', $street);
-
+        $streetTerms = array_map('trim', explode(',', $street));
 
         foreach ($streetTerms as $term) {
             $query->where('logradouro', 'LIKE', '%' . $term . '%');
         }
 
-        // Busca os resultados
+        // Busca os resultados na base local
         $results = $query->limit(50)->get();
 
-        // Retorna os resultados encontrados ou erro se nenhum resultado for encontrado
-        if (empty($results)) {
+        // Sincroniza com ViaCEP para ter lista completa e base atualizada (a menos que apenas_db seja pedido)
+        if (!$apenasDb) {
+            $streetParaApi = $streetTerms[0];
+            try {
+                $enderecosViaCep = $this->viaCepService->buscarEnderecoPorRua(strtoupper($uf), $city, $streetParaApi);
+            } catch (\Exception $e) {
+                // ViaCEP falhou; segue só com o que tem no DB
+                $enderecosViaCep = [];
+            }
+
+            if (!empty($enderecosViaCep)) {
+                foreach ($enderecosViaCep as $endereco) {
+                    if (empty($endereco['cep'])) {
+                        continue;
+                    }
+                    $cep = preg_replace('/[^0-9]/', '', $endereco['cep']);
+                    $this->salvar($cep, [
+                        'logradouro' => $endereco['logradouro'] ?? '',
+                        'complemento' => $endereco['complemento'] ?? '',
+                        'unidade' => $endereco['unidade'] ?? '',
+                        'bairro' => $endereco['bairro'] ?? '',
+                        'localidade' => $endereco['localidade'] ?? '',
+                        'uf' => $endereco['uf'] ?? '',
+                        'estado' => $endereco['estado'] ?? '',
+                        'regiao' => $endereco['regiao'] ?? '',
+                        'ibge' => $endereco['ibge'] ?? '',
+                        'gia' => $endereco['gia'] ?? '',
+                        'ddd' => $endereco['ddd'] ?? '',
+                        'siafi' => $endereco['siafi'] ?? '',
+                        'consultado_viacep' => 1,
+                    ]);
+                }
+
+                // Rebusca na base com os mesmos critérios (agora com a lista completa do ViaCEP)
+                $results = $query->limit(50)->get();
+            }
+        }
+
+        if ($results->isEmpty()) {
             throw new \Exception("Nenhum logradouro encontrado para os critérios fornecidos.");
         }
 
@@ -286,7 +328,7 @@ class CepService
     /**
      * Formata os dados de um ou mais registros de CEP para retorno.
      *
-     * @param array|Cep $cepModels
+     * @param array|\Illuminate\Support\Collection|Cep $cepModels
      * @param bool $formatted
      * @return array
      */
